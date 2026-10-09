@@ -19,3 +19,4 @@ View your app in AI Studio: https://ai.studio/apps/93c3790a-97bd-45c5-876c-3edb2
 3. Run the app:
    `npm run dev`
 "# Ticketmxpro" 
+"# ticketpromx" 
