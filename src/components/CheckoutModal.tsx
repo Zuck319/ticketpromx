@@ -76,14 +76,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const items = buildPreferenceItems(event.title, seats, serviceFee);
     const externalRef = generateMpExternalReference(orderId);
 
-    // Usar un correo de prueba fijo para evitar que MP crashee si el correo del user es el mismo que el del vendedor
-    const testEmail = "test_comprador_generico@gmail.com";
-
-    createPaymentPreference(items, externalRef, testEmail)
+    createPaymentPreference(items, externalRef, user?.email || undefined)
       .then(result => {
         if (!cancelled) {
-          // USAR SANDBOX PARA PODER PASAR TARJETAS FALSAS
-          setMpCheckoutUrl(result.sandboxUrl);
+          setMpCheckoutUrl(result.checkoutUrl);
           setIsLoadingPreference(false);
         }
       })
