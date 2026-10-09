@@ -1,0 +1,12 @@
+{
+  "projectId": "ticketmxpro",
+  "appId": "1:331832849524:web:b01b50a90d7639a8d44d21",
+  "apiKey": "AIzaSyBTctnYKf_chvnU83NASc7zayeKlgAzdkI",
+  "authDomain": "ticketmxpro.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "ticketmxpro.firebasestorage.app",
+  "messagingSenderId": "331832849524",
+  "measurementId": "G-X0Y2CX5WGM",
+  "oAuthClientId": "",
+  "recaptchaSiteKey": ""
+}

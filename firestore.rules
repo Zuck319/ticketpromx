@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'google.com');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'angel.solis.hdz.mxn@gmail.com') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['id', 'title', 'artist', 'venue', 'city', 'date', 'time', 'category', 'basePrice', 'totalSeats', 'availableSeats'])
+        && data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.artist is string && data.artist.size() <= 100
+        && data.venue is string && data.venue.size() <= 150
+        && data.city is string && data.city.size() <= 100
+        && data.date is string && data.date.size() <= 50
+        && data.time is string && data.time.size() <= 50
+        && data.category in ['Conciertos', 'Deportes', 'Teatro', 'Festivales', 'Comedia']
+        && data.basePrice is number && data.basePrice >= 0
+        && data.totalSeats is number && data.totalSeats >= 1
+        && data.availableSeats is number && data.availableSeats >= 0 && data.availableSeats <= data.totalSeats
+        && (!('isFeatured' in data) || data.isFeatured is bool);
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'userId', 'eventId', 'eventTitle', 'venue', 'totalAmount', 'status', 'paymentMethodMasked', 'paymentRef'])
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId == request.auth.uid
+        && data.eventId is string && data.eventId.size() <= 128
+        && data.eventTitle is string && data.eventTitle.size() <= 200
+        && data.venue is string && data.venue.size() <= 150
+        && data.totalAmount is number && data.totalAmount >= 0
+        && data.status in ['completed', 'cancelled', 'refunded']
+        && data.paymentMethodMasked is string && data.paymentMethodMasked.size() <= 50
+        && data.paymentRef is string && data.paymentRef.size() <= 128;
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'message', 'type', 'read'])
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.title is string && data.title.size() <= 150
+        && data.message is string && data.message.size() <= 1000
+        && data.type in ['order_confirmation', 'seat_reminder', 'event_update', 'promo']
+        && data.read is bool;
+    }
+
+    // Events collection: public catalog, admin writable, user can reserve seats
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isValidId(eventId) && isAdmin() && isValidEvent(incoming());
+      allow update: if isValidId(eventId) && (
+        (isAdmin() && isValidEvent(incoming())) ||
+        (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['availableSeats', 'updatedAt'])
+          && incoming().availableSeats is number
+          && incoming().availableSeats >= 0
+          && incoming().availableSeats <= existing().totalSeats)
+      );
+      allow delete: if isValidId(eventId) && isAdmin();
+    }
+
+    // Orders collection: authenticated purchase records
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId) && (isAdmin() || (isSignedIn() && existing().userId == request.auth.uid));
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isValidId(orderId) && isSignedIn() && incoming().userId == request.auth.uid && isValidOrder(incoming());
+      allow update, delete: if isValidId(orderId) && isAdmin();
+    }
+
+    // User subcollection: notifications
+    match /users/{userId}/notifications/{notificationId} {
+      allow get: if isValidId(userId) && isValidId(notificationId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow list: if isValidId(userId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow create: if isValidId(userId) && isValidId(notificationId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId)) && isValidNotification(incoming());
+      allow update: if isValidId(userId) && isValidId(notificationId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow delete: if isValidId(userId) && isValidId(notificationId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+    }
+
+    // Admins registry
+    match /admins/{adminId} {
+      allow read: if isValidId(adminId) && isAdmin();
+      allow write: if isValidId(adminId) && isAdmin();
+    }
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "entities": {
+    "Event": {
+      "title": "Event",
+      "description": "Event listing with venue details and seating configuration",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the event",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the event",
+          "maxLength": 200
+        },
+        "artist": {
+          "type": "string",
+          "description": "Artist or performer name",
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the event",
+          "maxLength": 2000
+        },
+        "venue": {
+          "type": "string",
+          "description": "Venue name",
+          "maxLength": 150
+        },
+        "city": {
+          "type": "string",
+          "description": "City where the event takes place",
+          "maxLength": 100
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the event in ISO format YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "time": {
+          "type": "string",
+          "description": "Time of the event e.g. 20:30",
+          "maxLength": 20
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the event",
+          "enum": ["Conciertos", "Deportes", "Teatro", "Festivales", "Comedia"]
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Banner or poster image URL",
+          "maxLength": 500
+        },
+        "basePrice": {
+          "type": "number",
+          "description": "Starting ticket price in MXN"
+        },
+        "totalSeats": {
+          "type": "number",
+          "description": "Total seat capacity"
+        },
+        "availableSeats": {
+          "type": "number",
+          "description": "Current number of available seats"
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Whether the event is curated as featured on the home page"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the event was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the event was last updated"
+        }
+      },
+      "required": ["id", "title", "artist", "venue", "city", "date", "time", "category", "basePrice", "totalSeats", "availableSeats"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Ticket purchase order made by an authenticated user",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique transaction and order ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase UID of the purchaser",
+          "maxLength": 128
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the purchaser",
+          "maxLength": 150
+        },
+        "userName": {
+          "type": "string",
+          "description": "Full name of the purchaser",
+          "maxLength": 150
+        },
+        "eventId": {
+          "type": "string",
+          "description": "Associated event ID",
+          "maxLength": 128
+        },
+        "eventTitle": {
+          "type": "string",
+          "description": "Snapshot of event title",
+          "maxLength": 200
+        },
+        "eventDate": {
+          "type": "string",
+          "description": "Snapshot of event date and time",
+          "maxLength": 50
+        },
+        "venue": {
+          "type": "string",
+          "description": "Snapshot of venue name",
+          "maxLength": 150
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total amount paid in MXN"
+        },
+        "status": {
+          "type": "string",
+          "description": "Order fulfillment status",
+          "enum": ["completed", "cancelled", "refunded"]
+        },
+        "paymentMethodMasked": {
+          "type": "string",
+          "description": "Masked payment card info e.g. Visa ending in 4242",
+          "maxLength": 50
+        },
+        "paymentRef": {
+          "type": "string",
+          "description": "Secure payment processor reference token",
+          "maxLength": 128
+        },
+        "encryptedPayloadHash": {
+          "type": "string",
+          "description": "Cryptographic SHA-256 integrity hash of encrypted payload",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp of the order"
+        }
+      },
+      "required": ["id", "userId", "eventId", "eventTitle", "venue", "totalAmount", "status", "paymentMethodMasked", "paymentRef"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Automated notification sent to user",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique notification ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Recipient user UID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification title",
+          "maxLength": 150
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification body text",
+          "maxLength": 1000
+        },
+        "type": {
+          "type": "string",
+          "description": "Category of notification",
+          "enum": ["order_confirmation", "seat_reminder", "event_update", "promo"]
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether user has read this notification"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "userId", "title", "message", "type", "read"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Designated administrator identity record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User UID of admin",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Verified email of administrator",
+          "maxLength": 150
+        },
+        "role": {
+          "type": "string",
+          "description": "Assigned administrative role",
+          "maxLength": 50
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when admin role was granted"
+        }
+      },
+      "required": ["id", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Catalog of public events with seat maps and availability"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "User purchase orders and ticket reservations"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notification inbox for ticket deliveries and alerts"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "System admin role white list"
+    }
+  }
+}

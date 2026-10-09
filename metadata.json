@@ -1,0 +1,6 @@
+{
+  "name": "TicketMaster Pro - Eventos y Boletos",
+  "description": "Plataforma de venta de boletos con selección interactiva de asientos, pagos encriptados seguros, panel de administración y API REST.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
